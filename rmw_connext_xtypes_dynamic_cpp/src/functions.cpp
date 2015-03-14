@@ -16,6 +16,11 @@
 extern "C"
 {
 
+namespace rosidl_typesupport_introspection_cpp
+{
+  const char * typesupport_introspection_identifier;
+}  // namespace rosidl_typesupport_introspection_cpp
+
 const char * _rti_connext_dynamic_identifier = "connext_dynamic";
 
 const char *
@@ -823,6 +828,7 @@ rmw_create_client(const rmw_node_t * node,
                   const rosidl_service_type_support_t * type_support,
                   const char * service_name)
 {
+  return NULL;
 }
 
 rmw_ret_t
