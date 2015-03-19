@@ -21,11 +21,12 @@ namespace rosidl_typesupport_introspection_cpp
   const char * typesupport_introspection_identifier;
 }  // namespace rosidl_typesupport_introspection_cpp
 
-const char * _rti_connext_dynamic_identifier = "connext_dynamic";
+RMW_PUBLIC const char * rti_connext_dynamic_identifier = "connext_dynamic";
 
 const char *
-rmw_get_implementation_identifier() {
-  return _rti_connext_dynamic_identifier;
+rmw_get_implementation_identifier()
+{
+    return rti_connext_dynamic_identifier;
 }
 
 rmw_ret_t
@@ -77,7 +78,7 @@ rmw_create_node(const char * name)
     };
 
     rmw_node_t * node = new rmw_node_t;
-    node->implementation_identifier = _rti_connext_dynamic_identifier;
+    node->implementation_identifier = rti_connext_dynamic_identifier;
     node->data = participant;
     return node;
 }
@@ -188,7 +189,7 @@ rmw_create_publisher(const rmw_node_t * node,
                      const char * topic_name,
                      size_t queue_size)
 {
-    if (node->implementation_identifier != _rti_connext_dynamic_identifier)
+    if (node->implementation_identifier != rti_connext_dynamic_identifier)
     {
         rmw_set_error_string("node handle not from this implementation");
         // printf("but from: %s\n", node->implementation_identifier);
@@ -290,7 +291,7 @@ rmw_create_publisher(const rmw_node_t * node,
     custom_publisher_info->dynamic_data = dynamic_data;
 
     rmw_publisher_t * publisher = new rmw_publisher_t;
-    publisher->implementation_identifier = _rti_connext_dynamic_identifier;
+    publisher->implementation_identifier = rti_connext_dynamic_identifier;
     publisher->data = custom_publisher_info;
     return publisher;
 }
@@ -387,7 +388,7 @@ void _publish(DDS_DynamicData * dynamic_data, const void * ros_message, const ro
 rmw_ret_t
 rmw_publish(const rmw_publisher_t * publisher, const void * ros_message)
 {
-    if (publisher->implementation_identifier != _rti_connext_dynamic_identifier)
+    if (publisher->implementation_identifier != rti_connext_dynamic_identifier)
     {
         rmw_set_error_string("publisher handle not from this implementation");
         // printf("but from: %s\n", publisher->implementation_identifier);
@@ -428,7 +429,7 @@ rmw_create_subscription(const rmw_node_t * node,
                         const char * topic_name,
                         size_t queue_size)
 {
-    if (node->implementation_identifier != _rti_connext_dynamic_identifier)
+    if (node->implementation_identifier != rti_connext_dynamic_identifier)
     {
         rmw_set_error_string("node handle not from this implementation");
         // printf("but from: %s\n", node->implementation_identifier);
@@ -530,7 +531,7 @@ rmw_create_subscription(const rmw_node_t * node,
     custom_subscriber_info->dynamic_data = dynamic_data;
 
     rmw_subscription_t * subscription = new rmw_subscription_t;
-    subscription->implementation_identifier = _rti_connext_dynamic_identifier;
+    subscription->implementation_identifier = rti_connext_dynamic_identifier;
     subscription->data = custom_subscriber_info;
     return subscription;
 }
@@ -641,7 +642,7 @@ void _take(DDS_DynamicData * dynamic_data, void * ros_message, const rosidl_type
 rmw_ret_t
 rmw_take(const rmw_subscription_t * subscription, void * ros_message, bool * taken)
 {
-    if (subscription->implementation_identifier != _rti_connext_dynamic_identifier)
+    if (subscription->implementation_identifier != rti_connext_dynamic_identifier)
     {
         rmw_set_error_string("subscriber handle not from this implementation");
         // printf("but from: %s\n", subscription->implementation_identifier);
@@ -691,7 +692,7 @@ rmw_guard_condition_t *
 rmw_create_guard_condition()
 {
     rmw_guard_condition_t * guard_condition_handle = new rmw_guard_condition_t;
-    guard_condition_handle->implementation_identifier = _rti_connext_dynamic_identifier;
+    guard_condition_handle->implementation_identifier = rti_connext_dynamic_identifier;
     guard_condition_handle->data = new DDSGuardCondition();
     return guard_condition_handle;
 }
@@ -711,7 +712,7 @@ rmw_destroy_guard_condition(rmw_guard_condition_t * guard_condition)
 rmw_ret_t
 rmw_trigger_guard_condition(const rmw_guard_condition_t * guard_condition_handle)
 {
-    if (guard_condition_handle->implementation_identifier != _rti_connext_dynamic_identifier)
+    if (guard_condition_handle->implementation_identifier != rti_connext_dynamic_identifier)
     {
         rmw_set_error_string("guard condition handle not from this implementation");
         // printf("but from: %s\n", guard_condition_handle->implementation_identifier);

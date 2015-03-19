@@ -134,5 +134,6 @@ install(
   RUNTIME DESTINATION bin
 )
 
-ament_export_include_directories(include)
 ament_export_libraries(${rosidl_generate_interfaces_TARGET}${_target_suffix} ${Connext_LIBRARIES})
+
+ament_export_include_directories(include)
