@@ -2159,6 +2159,7 @@ struct ConnextDynamicServiceInfo
 {
   connext::Replier<DDS_DynamicData, DDS_DynamicData> * replier_;
   DDSDataReader * request_datareader_;
+  DDSReadCondition * read_condition_;
   DDS::DynamicDataTypeSupport * request_type_support_;
   DDS::DynamicDataTypeSupport * response_type_support_;
   DDS_TypeCode * response_type_code_;
@@ -2171,6 +2172,7 @@ struct ConnextDynamicClientInfo
 {
   connext::Requester<DDS_DynamicData, DDS_DynamicData> * requester_;
   DDSDataReader * response_datareader_;
+  DDSReadCondition * read_condition_;
   DDS::DynamicDataTypeSupport * request_type_support_;
   DDS::DynamicDataTypeSupport * response_type_support_;
   DDS_TypeCode * response_type_code_;
@@ -2232,22 +2234,12 @@ rmw_wait(
       RMW_SET_ERROR_MSG("service info handle is null");
       return RMW_RET_ERROR;
     }
-    DDSDataReader * dynamic_reader = service_info->request_datareader_;
-    if (!dynamic_reader) {
-      RMW_SET_ERROR_MSG("request datareader handle is null");
+    DDSReadCondition * read_condition = service_info->read_condition_;
+    if (!read_condition) {
+      RMW_SET_ERROR_MSG("read condition handle is null");
       return RMW_RET_ERROR;
     }
-    DDSStatusCondition * condition = dynamic_reader->get_statuscondition();
-    if (!condition) {
-      RMW_SET_ERROR_MSG("condition handle is null");
-      return RMW_RET_ERROR;
-    }
-    DDS_ReturnCode_t status = condition->set_enabled_statuses(DDS_DATA_AVAILABLE_STATUS);
-    if (status != DDS_RETCODE_OK) {
-      RMW_SET_ERROR_MSG("failed to set enabled statuses");
-      return RMW_RET_ERROR;
-    }
-    status = waitset.attach_condition(condition);
+    DDS_ReturnCode_t status = waitset.attach_condition(read_condition);
     if (status != DDS_RETCODE_OK) {
       RMW_SET_ERROR_MSG("failed to attach condition");
       return RMW_RET_ERROR;
@@ -2262,22 +2254,12 @@ rmw_wait(
       RMW_SET_ERROR_MSG("client info handle is null");
       return RMW_RET_ERROR;
     }
-    DDSDataReader * dynamic_reader = client_info->response_datareader_;
-    if (!dynamic_reader) {
-      RMW_SET_ERROR_MSG("response datareader handle is null");
+    DDSReadCondition * read_condition = client_info->read_condition_;
+    if (!read_condition) {
+      RMW_SET_ERROR_MSG("read condition handle is null");
       return RMW_RET_ERROR;
     }
-    DDSStatusCondition * condition = dynamic_reader->get_statuscondition();
-    if (!condition) {
-      RMW_SET_ERROR_MSG("condition handle is null");
-      return RMW_RET_ERROR;
-    }
-    DDS_ReturnCode_t status = condition->set_enabled_statuses(DDS_DATA_AVAILABLE_STATUS);
-    if (status != DDS_RETCODE_OK) {
-      RMW_SET_ERROR_MSG("failed to set enabled statuses");
-      return RMW_RET_ERROR;
-    }
-    status = waitset.attach_condition(condition);
+    DDS_ReturnCode_t status = waitset.attach_condition(read_condition);
     if (status != DDS_RETCODE_OK) {
       RMW_SET_ERROR_MSG("failed to attach condition");
       return RMW_RET_ERROR;
@@ -2367,21 +2349,16 @@ rmw_wait(
       RMW_SET_ERROR_MSG("service info handle is null");
       return RMW_RET_ERROR;
     }
-    DDSDataReader * dynamic_reader = service_info->request_datareader_;
-    if (!dynamic_reader) {
-      RMW_SET_ERROR_MSG("request datareader handle is null");
-      return RMW_RET_ERROR;
-    }
-    DDSCondition * condition = dynamic_reader->get_statuscondition();
-    if (!condition) {
-      RMW_SET_ERROR_MSG("condition handle is null");
+    DDSReadCondition * read_condition = service_info->read_condition_;
+    if (!read_condition) {
+      RMW_SET_ERROR_MSG("read condition handle is null");
       return RMW_RET_ERROR;
     }
 
     // search for service condition in active set
     DDS_Long j = 0;
     for (; j < active_conditions.length(); ++j) {
-      if (active_conditions[j] == condition) {
+      if (active_conditions[j] == read_condition) {
         break;
       }
     }
@@ -2400,21 +2377,16 @@ rmw_wait(
       RMW_SET_ERROR_MSG("client info handle is null");
       return RMW_RET_ERROR;
     }
-    DDSDataReader * dynamic_reader = client_info->response_datareader_;
-    if (!dynamic_reader) {
-      RMW_SET_ERROR_MSG("response datareader handle is null");
-      return RMW_RET_ERROR;
-    }
-    DDSCondition * condition = dynamic_reader->get_statuscondition();
-    if (!condition) {
-      RMW_SET_ERROR_MSG("condition handle is null");
+    DDSReadCondition * read_condition = client_info->read_condition_;
+    if (!read_condition) {
+      RMW_SET_ERROR_MSG("read condition handle is null");
       return RMW_RET_ERROR;
     }
 
     // search for client condition in active set
     DDS_Long j = 0;
     for (; j < active_conditions.length(); ++j) {
-      if (active_conditions[j] == condition) {
+      if (active_conditions[j] == read_condition) {
         break;
       }
     }
@@ -2497,6 +2469,7 @@ rmw_create_client(
   DDS_DataWriterQos datawriter_qos;
   connext::Requester<DDS_DynamicData, DDS_DynamicData> * requester = nullptr;
   DDSDataReader * response_datareader = nullptr;
+  DDSReadCondition * read_condition = nullptr;
   ConnextDynamicClientInfo * client_info = nullptr;
   // Begin initializing elements
   client = rmw_client_allocate();
@@ -2580,6 +2553,13 @@ rmw_create_client(
     goto fail;
   }
 
+  read_condition = response_datareader->create_readcondition(
+    DDS_ANY_SAMPLE_STATE, DDS_ANY_VIEW_STATE, DDS_ANY_INSTANCE_STATE);
+  if (!read_condition) {
+    RMW_SET_ERROR_MSG("failed to create read condition");
+    goto fail;
+  }
+
   // Allocate memory for the ConnextDynamicClientInfo object.
   buf = rmw_allocate(sizeof(ConnextDynamicClientInfo));
   if (!buf) {
@@ -2591,6 +2571,7 @@ rmw_create_client(
   buf = nullptr;  // Only free the casted pointer; don't need the buf pointer anymore.
   client_info->requester_ = requester;
   client_info->response_datareader_ = response_datareader;
+  client_info->read_condition_ = read_condition;
   client_info->request_type_support_ = request_type_support;
   client_info->response_type_support_ = response_type_support;
   client_info->response_type_code_ = response_type_code;
@@ -2602,6 +2583,13 @@ rmw_create_client(
   client->data = client_info;
   return client;
 fail:
+  if (response_datareader) {
+    if (read_condition) {
+      if (response_datareader->delete_readcondition(read_condition) != DDS::RETCODE_OK) {
+        fprintf(stderr, "leaking readcondition while handling failure\n");
+      }
+    }
+  }
   if (client) {
     rmw_client_free(client);
   }
@@ -2668,6 +2656,15 @@ rmw_destroy_client(rmw_client_t * client)
   auto result = RMW_RET_OK;
   ConnextDynamicClientInfo * client_info = static_cast<ConnextDynamicClientInfo *>(client->data);
   if (client_info) {
+    auto response_datareader = client_info->response_datareader_;
+    if (response_datareader) {
+      auto read_condition = client_info->read_condition_;
+      if (response_datareader->delete_readcondition(read_condition) != DDS_RETCODE_OK) {
+        RMW_SET_ERROR_MSG("failed to delete readcondition");
+        return RMW_RET_ERROR;
+      }
+      client_info->read_condition_ = nullptr;
+    }
     if (client_info->request_type_code_) {
       if (destroy_type_code(client_info->request_type_code_) != RMW_RET_OK) {
         RMW_SET_ERROR_MSG("failed to destroy type code");
@@ -3054,6 +3051,7 @@ rmw_create_service(
   DDS_DataWriterQos datawriter_qos;
   connext::Replier<DDS_DynamicData, DDS_DynamicData> * replier = nullptr;
   DDSDataReader * request_datareader = nullptr;
+  DDSReadCondition * read_condition = nullptr;
   ConnextDynamicServiceInfo * server_info = nullptr;
   // Begin initializing elements
   service = rmw_service_allocate();
@@ -3134,6 +3132,13 @@ rmw_create_service(
     goto fail;
   }
 
+  read_condition = request_datareader->create_readcondition(
+    DDS_ANY_SAMPLE_STATE, DDS_ANY_VIEW_STATE, DDS_ANY_INSTANCE_STATE);
+  if (!read_condition) {
+    RMW_SET_ERROR_MSG("failed to create read condition");
+    goto fail;
+  }
+
   // Allocate memory for the ConnextDynamicServiceInfo object.
   buf = rmw_allocate(sizeof(ConnextDynamicServiceInfo));
   if (!buf) {
@@ -3145,6 +3150,7 @@ rmw_create_service(
   buf = nullptr;  // Only free the casted pointer; don't need the buf pointer anymore.
   server_info->replier_ = replier;
   server_info->request_datareader_ = request_datareader;
+  server_info->read_condition_ = read_condition;
   server_info->response_type_support_ = response_type_support;
   server_info->request_members_ = request_members;
   server_info->response_members_ = response_members;
@@ -3153,6 +3159,13 @@ rmw_create_service(
   service->data = server_info;
   return service;
 fail:
+  if (request_datareader) {
+    if (read_condition) {
+      if (request_datareader->delete_readcondition(read_condition) != DDS::RETCODE_OK) {
+        fprintf(stderr, "leaking readcondition while handling failure\n");
+      }
+    }
+  }
   if (service) {
     rmw_service_free(service);
   }
@@ -3219,6 +3232,15 @@ rmw_destroy_service(rmw_service_t * service)
   auto result = RMW_RET_OK;
   auto service_info = static_cast<ConnextDynamicServiceInfo *>(service->data);
   if (service_info) {
+    auto request_datareader = service_info->request_datareader_;
+    if (request_datareader) {
+      auto read_condition = service_info->read_condition_;
+      if (request_datareader->delete_readcondition(read_condition) != DDS_RETCODE_OK) {
+        RMW_SET_ERROR_MSG("failed to delete readcondition");
+        return RMW_RET_ERROR;
+      }
+      service_info->read_condition_ = nullptr;
+    }
     if (service_info->request_type_code_) {
       if (destroy_type_code(service_info->request_type_code_) != RMW_RET_OK) {
         RMW_SET_ERROR_MSG("failed to destroy type code");
