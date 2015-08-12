@@ -1225,7 +1225,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
       return RMW_RET_ERROR;
     }
     DDS_ReturnCode_t status = waitset.attach_condition(read_condition);
-    if(rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
+    if (rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
       return RMW_RET_ERROR;
     }
   }
@@ -1239,7 +1239,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
       return RMW_RET_ERROR;
     }
     DDS_ReturnCode_t status = waitset.attach_condition(guard_condition);
-    if(rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
+    if (rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
       return RMW_RET_ERROR;
     }
   }
@@ -1268,7 +1268,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
       return RMW_RET_ERROR;
     }
     status = waitset.attach_condition(condition);
-    if(rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
+    if (rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
       return RMW_RET_ERROR;
     }
   }
@@ -1297,7 +1297,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
       return RMW_RET_ERROR;
     }
     status = waitset.attach_condition(condition);
-    if(rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
+    if (rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
       return RMW_RET_ERROR;
     }
   }
