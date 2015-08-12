@@ -153,21 +153,19 @@ rmw_get_implementation_identifier()
   return rti_connext_dynamic_identifier;
 }
 
-rmw_ret_t rmw_check_attach_condition_error(DDS_ReturnCode_t retcode)
+rmw_ret_t check_attach_condition_error(DDS::ReturnCode_t retcode)
 {
+  if (retcode == DDS_RETCODE_OK) {
+    return RMW_RET_OK;
+  }
   if (retcode == DDS_RETCODE_OUT_OF_RESOURCES) {
     RMW_SET_ERROR_MSG("failed to attach condition to waitset: out of resources");
-    return RMW_RET_ERROR;
-  }
-  if (retcode == DDS_RETCODE_BAD_PARAMETER) {
+  } else if (retcode == DDS_RETCODE_BAD_PARAMETER) {
     RMW_SET_ERROR_MSG("failed to attach condition to waitset: condition pointer was invalid");
-    return RMW_RET_ERROR;
-  }
-  if (retcode != DDS_RETCODE_OK) {
+  } else {
     RMW_SET_ERROR_MSG("failed to attach condition to waitset");
-    return RMW_RET_ERROR;
   }
-  return RMW_RET_OK;
+  return RMW_RET_ERROR;
 }
 
 rmw_ret_t
@@ -2494,7 +2492,7 @@ rmw_wait(
       return RMW_RET_ERROR;
     }
     DDS_ReturnCode_t status = waitset.attach_condition(read_condition);
-    if (rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
+    if (check_attach_condition_error(status) == RMW_RET_ERROR) {
       return RMW_RET_ERROR;
     }
   }
@@ -2508,7 +2506,7 @@ rmw_wait(
       return RMW_RET_ERROR;
     }
     DDS_ReturnCode_t status = waitset.attach_condition(guard_condition);
-    if (rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
+    if (check_attach_condition_error(status) == RMW_RET_ERROR) {
       return RMW_RET_ERROR;
     }
   }
@@ -2537,7 +2535,7 @@ rmw_wait(
       return RMW_RET_ERROR;
     }
     status = waitset.attach_condition(condition);
-    if (rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
+    if (check_attach_condition_error(status) == RMW_RET_ERROR) {
       return RMW_RET_ERROR;
     }
   }
@@ -2566,7 +2564,7 @@ rmw_wait(
       return RMW_RET_ERROR;
     }
     status = waitset.attach_condition(condition);
-    if (rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
+    if (check_attach_condition_error(status) == RMW_RET_ERROR) {
       return RMW_RET_ERROR;
     }
   }
