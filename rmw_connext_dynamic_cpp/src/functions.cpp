@@ -160,7 +160,7 @@ rmw_ret_t rmw_check_attach_condition_error(DDS_ReturnCode_t retcode)
     return RMW_RET_ERROR;
   }
   if (retcode == DDS_RETCODE_BAD_PARAMETER) {
-    RMW_SET_ERROR_MSG("failed to attach condition to waitset: invalid condition");
+    RMW_SET_ERROR_MSG("failed to attach condition to waitset: condition pointer was invalid");
     return RMW_RET_ERROR;
   }
   if (retcode != DDS_RETCODE_OK) {
