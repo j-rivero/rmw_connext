@@ -174,6 +174,23 @@ struct ConnextStaticServiceInfo
   const service_type_support_callbacks_t * callbacks_;
 };
 
+rmw_ret_t rmw_check_attach_condition_error(DDS_ReturnCode_t retcode)
+{
+  if (retcode == DDS_RETCODE_OUT_OF_RESOURCES) {
+    RMW_SET_ERROR_MSG("failed to attach condition to waitset: out of resources");
+    return RMW_RET_ERROR;
+  }
+  if (retcode == DDS_RETCODE_BAD_PARAMETER) {
+    RMW_SET_ERROR_MSG("failed to attach condition to waitset: invalid condition");
+    return RMW_RET_ERROR;
+  }
+  if (retcode != DDS_RETCODE_OK) {
+    RMW_SET_ERROR_MSG("failed to attach condition to waitset");
+    return RMW_RET_ERROR;
+  }
+  return RMW_RET_OK;
+}
+
 const char *
 rmw_get_implementation_identifier()
 {
@@ -1208,8 +1225,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
       return RMW_RET_ERROR;
     }
     DDS_ReturnCode_t status = waitset.attach_condition(read_condition);
-    if (status != DDS_RETCODE_OK) {
-      RMW_SET_ERROR_MSG("failed to attach condition");
+    if(rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
       return RMW_RET_ERROR;
     }
   }
@@ -1223,8 +1239,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
       return RMW_RET_ERROR;
     }
     DDS_ReturnCode_t status = waitset.attach_condition(guard_condition);
-    if (status != DDS_RETCODE_OK) {
-      RMW_SET_ERROR_MSG("failed to attach condition");
+    if(rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
       return RMW_RET_ERROR;
     }
   }
@@ -1253,8 +1268,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
       return RMW_RET_ERROR;
     }
     status = waitset.attach_condition(condition);
-    if (status != DDS_RETCODE_OK) {
-      RMW_SET_ERROR_MSG("failed to attach condition");
+    if(rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
       return RMW_RET_ERROR;
     }
   }
@@ -1283,8 +1297,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
       return RMW_RET_ERROR;
     }
     status = waitset.attach_condition(condition);
-    if (status != DDS_RETCODE_OK) {
-      RMW_SET_ERROR_MSG("failed to attach condition");
+    if(rmw_check_attach_condition_error(status) == RMW_RET_ERROR) {
       return RMW_RET_ERROR;
     }
   }
